@@ -9,54 +9,51 @@
 #include <shobjidl.h> 
 #include <windows.h>
 #include <windowsx.h> 
- 
+
 #pragma comment(lib, "Ws2_32.lib")
 
-
-#define IDB_Button1 1
-#define IDB_Button2 2
-#define ID_BTNFILE 3
-
-#define IDB_Button4 4
+#define ID_BTN_EXIT 1
+#define ID_BTN_FILE 2
+#define ID_BTN_SEND 3
+#define ID_BTN_RECV 4
 #define ID_RADIOBTN1 5
 #define ID_RADIOBTN2 6
-#define ID_RECV 7
-#define IDB_Input 8
-
-#define ID_LISTVIEW 9
+#define ID_LISTVIEW 7
 
 
+RECT rcl;
+
+HWND label_ip;
+HWND input_ip;
+HWND input_file;
+HWND button_send;
+HWND button_exit;
+HWND button_file;
+HWND BtnGROUPBOX;
+HWND BtnRADIOBTN1;
+HWND BtnRADIOBTN2;
+HWND button_recv;
+HWND hWndList;
+HWND label_file;
+
+
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 typedef struct
 {
+
     TCHAR achName[MAX_PATH];
     TCHAR achIp[MAX_PATH];
-} Player;
 
-Player Roster[] =
+}Employee;
+
+Employee employee[] =
 {
 
     {TEXT("Мой айпи"), TEXT("127.0.0.1")},
     {TEXT("Иван Петрович"), TEXT("192.168.1.254")},
 
 };
-
-RECT rcl;
-
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-HWND static_label, hwndButton;
-HWND hwndInput1;
-HWND hwndInput2;
-HWND hwndButton2;
-HWND BtnFILE;
-HWND BtnGROUPBOX;
-HWND BtnRADIOBTN1;
-HWND BtnRADIOBTN2;
-HWND hwndButtonRecv;
-HWND hWndList;
-HWND static_label2;
-
 
 int recv_file() {
 
@@ -102,8 +99,8 @@ int recv_file() {
 
     recv(sock_accept, file_name, sizeof(file_name), 0);
 
-    char tt[2] = "1";
-    send(sock_accept, tt, sizeof(tt), 0);
+    char check[2] = "1";
+    send(sock_accept, check, sizeof(check), 0);
 
 
 
@@ -184,7 +181,7 @@ int send_file(char* ip_address, char* file_address, char* name_of_file, int len_
 
     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == INVALID_SOCKET) {
-        SetWindowText(static_label, L"ERR sock");
+ 
         closesocket(sock);
         WSACleanup();
         fclose(f);
@@ -195,12 +192,12 @@ int send_file(char* ip_address, char* file_address, char* name_of_file, int len_
     int err_c = connect(sock, remote_addr, remote_addrlen);
 
     //------------------------------------------------------------------file_name
- 
+
 
     send(sock, name_of_file, len_name, 0);
 
-    char b[2];
-    recv(sock, b, sizeof(b), 0);
+    char check[2];
+    recv(sock, check, sizeof(check), 0);
 
     if (err_c == 0)
     {
@@ -302,42 +299,42 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CREATE:
         GetClientRect(hwnd, &rcl);
-        static_label = CreateWindow(L"Static", L"Кому:", WS_CHILD | WS_VISIBLE,
+        label_ip = CreateWindow(L"Static", L"Кому:", WS_CHILD | WS_VISIBLE,
             280,
             10,
             rcl.right - 290,
             20, hwnd, 0, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), 0);
 
 
-        hwndInput1 = CreateWindow(
+        input_ip = CreateWindow(
             L"EDIT", 0, WS_BORDER | WS_CHILD | WS_VISIBLE,
             280,
             30,
             rcl.right - 290,
-            20, hwnd, (HMENU)IDB_Input, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+            20, hwnd, 0, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
 
-        static_label2 = CreateWindow(L"Static", L"Файл:", WS_CHILD | WS_VISIBLE,
+        label_file = CreateWindow(L"Static", L"Файл:", WS_CHILD | WS_VISIBLE,
             280,
             80,
             rcl.right - 290,
             20, hwnd, 0, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), 0);
 
-        hwndInput2 = CreateWindow(
+        input_file = CreateWindow(
             L"EDIT", 0, WS_BORDER | WS_CHILD | WS_VISIBLE,
             280,
             100,
             rcl.right - 290,
-            20, hwnd, (HMENU)IDB_Input, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+            20, hwnd, 0, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
 
 
 
-        BtnFILE = CreateWindow(
+        button_file = CreateWindow(
             L"BUTTON", L"ВЫБРАТЬ", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
             280,         // x position 
             130,         // y position 
             90,        // Button width
             30,        // Button height
-            hwnd, (HMENU)ID_BTNFILE, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+            hwnd, (HMENU)ID_BTN_FILE, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
 
 
         BtnGROUPBOX = CreateWindow(
@@ -375,31 +372,31 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         //---------------------------------------ID_RADIOBTN
 
 
-        hwndButtonRecv = CreateWindow(
+        button_recv = CreateWindow(
             L"BUTTON", L"ПРИНЯТЬ", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
             rcl.right - 300,         // x position 
             rcl.bottom - 40,         // y position 
             90,        // Button width
             30,        // Button height
-            hwnd, (HMENU)ID_RECV, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
-        Button_Enable(hwndButtonRecv, FALSE);
+            hwnd, (HMENU)ID_BTN_RECV, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+        Button_Enable(button_recv, FALSE);
 
 
-        hwndButton = CreateWindow(
+        button_send = CreateWindow(
             L"BUTTON", L"ОТПРАВИТЬ", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
             rcl.right - 200,         // x position 
             rcl.bottom - 40,         // y position 
             90,        // Button width
             30,        // Button height
-            hwnd, (HMENU)IDB_Button1, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+            hwnd, (HMENU)ID_BTN_SEND, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
 
-        hwndButton2 = CreateWindow(
+        button_exit = CreateWindow(
             L"BUTTON", L"ВЫХОД", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
             rcl.right - 100,         // x position 
             rcl.bottom - 40,         // y position 
             90,        // Button width
             30,        // Button height
-            hwnd, (HMENU)IDB_Button2, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+            hwnd, (HMENU)ID_BTN_EXIT, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
 
         hWndList = CreateWindow(
             L"LISTBOX",
@@ -411,8 +408,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         SendMessage(hWndList, WM_SETREDRAW, FALSE, 0L);
 
-        for (int i = 0; i < ARRAYSIZE(Roster); i++) {
-            SendMessage(hWndList, LB_ADDSTRING, 0, (LPARAM)Roster[i].achName);
+        for (int i = 0; i < ARRAYSIZE(employee); i++) {
+            SendMessage(hWndList, LB_ADDSTRING, 0, (LPARAM)employee[i].achName);
 
         }
 
@@ -434,49 +431,47 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         switch (wParam)
         {
-        case IDB_Button1:
+        case ID_BTN_SEND:
         {
 
 
-            Button_Enable(hwndButton, FALSE);
+            Button_Enable(button_send, FALSE);
 
             char line[255];
-            GetWindowTextA(hwndInput1, line, sizeof(line));
+            GetWindowTextA(input_ip, line, sizeof(line));
 
             char line2[255];
-            GetWindowTextA(hwndInput2, line2, sizeof(line2));
+            GetWindowTextA(input_file, line2, sizeof(line2));
 
-        //--------------------------------------------
+            //--------------------------------------------
 
-            char dd[255];
+            char file_name[255];
 
             int j = 0;
             for (int i = 0; i < strlen(line2); i++)
             {
 
                 if (line2[i] == '\\') {
-                    memset(dd, 0, sizeof(dd));
+                    memset(file_name, 0, sizeof(file_name));
                     j = 0;
                     continue;
                 }
-                dd[j] = line2[i];
+                file_name[j] = line2[i];
                 j++;
-              
-            }
-            dd[j] = 0;
 
-         
-           
-        
-           int is_send = send_file(line, line2, dd, j);
+            }
+            file_name[j] = 0;
+
+            int is_send = send_file(line, line2, file_name, j);
+
 
             switch (is_send)
             {
 
             case 0:
                 MessageBox(hwnd, L"Файл отправлен успешно!", L"TZAR", MB_OK);
-                SetWindowText(hwndInput1, L"");
-                SetWindowText(hwndInput2, L"");
+                SetWindowText(input_ip, L"");
+                SetWindowText(input_file, L"");
                 break;
             case 1:
                 MessageBox(hwnd, L"Ошибка файла!", L"TZAR", MB_OK);
@@ -500,33 +495,33 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 
 
-            Button_Enable(hwndButton, TRUE);
+            Button_Enable(button_send, TRUE);
 
             return 0;
         }
 
-        case ID_RECV:
+        case ID_BTN_RECV:
         {
-            Button_Enable(hwndButtonRecv, FALSE);
+            Button_Enable(button_recv, FALSE);
 
             recv_file();
-            Button_Enable(hwndButtonRecv, TRUE);
+            Button_Enable(button_recv, TRUE);
             MessageBox(hwnd, L"Файл успешно загружен!", L"TZAR", MB_OK);
-          
+
             return 0;
         }
 
-        case IDB_Button2:
+        case ID_BTN_EXIT:
         {
             if (MessageBox(hwnd, L"Выйти из программы?", L"TZAR", MB_OKCANCEL) == IDOK)
             {
                 DestroyWindow(hwnd);
             }
-            // Else: User canceled. Do nothing.
+ 
             return 0;
         }
 
-        case ID_BTNFILE:
+        case ID_BTN_FILE:
         {
             HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
                 COINIT_DISABLE_OLE1DDE);
@@ -535,16 +530,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 IFileOpenDialog* pFileOpen;
 
-                // Create the FileOpenDialog object.
+         
                 hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
                     IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
 
                 if (SUCCEEDED(hr))
                 {
-                    // Show the Open dialog box.
+              
                     hr = pFileOpen->Show(NULL);
 
-                    // Get the file name from the dialog box.
+                 
                     if (SUCCEEDED(hr))
                     {
                         IShellItem* pItem;
@@ -554,11 +549,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                             PWSTR pszFilePath;
                             hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 
-                            // Display the file name to the user.
+                         
                             if (SUCCEEDED(hr))
                             {
 
-                                SetWindowText(hwndInput2, pszFilePath);
+                                SetWindowText(input_file, pszFilePath);
                                 CoTaskMemFree(pszFilePath);
                             }
                             pItem->Release();
@@ -575,20 +570,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case ID_RADIOBTN1:
         {
 
-            Button_Enable(hwndButton, TRUE);
-            Button_Enable(BtnFILE, TRUE);
-            Button_Enable(hwndButtonRecv, FALSE);
+            Button_Enable(button_send, TRUE);
+            Button_Enable(button_file, TRUE);
+            Button_Enable(button_recv, FALSE);
 
             return 0;
         }
 
         case ID_RADIOBTN2:
         {
-            SetWindowText(hwndInput1, L"");
-            SetWindowText(hwndInput2, L"");
-            Button_Enable(hwndButtonRecv, TRUE);
-            Button_Enable(hwndButton, FALSE);
-            Button_Enable(BtnFILE, FALSE);
+            SetWindowText(input_ip, L"");
+            SetWindowText(input_file, L"");
+            Button_Enable(button_recv, TRUE);
+            Button_Enable(button_send, FALSE);
+            Button_Enable(button_file, FALSE);
             return 0;
         }
 
@@ -601,33 +596,30 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         switch (LOWORD(wParam)) {
 
 
-            case ID_LISTVIEW:
+        case ID_LISTVIEW:
+        {
+
+            if (HIWORD(wParam) == LBN_DBLCLK)
             {
 
-                if (HIWORD(wParam) == LBN_DBLCLK)
-                {
 
+                int pos = (int)SendMessage(hWndList, LB_GETCURSEL, 0, 0);
 
-                    int pos = (int)SendMessage(hWndList, LB_GETCURSEL, 0, 0);
-
-                    SetWindowText(hwndInput1, Roster[pos].achIp);
-
-                }
-
-                return 0;
+                SetWindowText(input_ip, employee[pos].achIp);
 
             }
 
             return 0;
-            }
 
+        }
 
+        return 0;
+        }
 
         return 0;
 
     case WM_PAINT:
     {
-
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
 
@@ -635,15 +627,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         EndPaint(hwnd, &ps);
         return 0;
-
     }
-
 
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
     }
-
 
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
